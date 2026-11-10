@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8"><title>Eludiendo el cubo blanco: quiz, estéticas y chat</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+:root{--bg:#e9e4d6;--fg:#111;--card:#fffdf5;--a:#ff2e93;--b:#2b2bff;--c:#c6ff00;--mut:#555;--ok:#0a8a3a;--no:#c4161c;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d0d14;--fg:#f2f2f2;--card:#1a1a26;--mut:#aaa;--ok:#4ade80;--no:#ff6b6b;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 "Courier New",monospace;background-image:radial-gradient(var(--mut) 1px,transparent 1px);background-size:18px 18px}
+main{max-width:760px;margin:0 auto;padding:16px}
+.hero{background:var(--c);color:#111;border:3px solid #111;box-shadow:6px 6px 0 var(--a);padding:14px;transform:rotate(-1deg);margin:8px 0 18px}
+h1{font:900 clamp(1.6rem,7vw,2.6rem)/1 Impact,"Arial Black",sans-serif;text-transform:uppercase;margin:0;letter-spacing:-1px}
+.tag{display:inline-block;background:#111;color:var(--c);padding:1px 8px;font-size:.8rem;margin-bottom:6px}
+h2{font:900 1.3rem Impact,"Arial Black",sans-serif;text-transform:uppercase;background:var(--b);color:#fff;display:inline-block;padding:2px 10px;margin:26px 0 8px;transform:rotate(1deg)}
+.card{background:var(--card);border:3px solid var(--fg);box-shadow:5px 5px 0 var(--b);padding:12px;margin:14px 0}
+.opt{display:block;width:100%;text-align:left;background:var(--card);color:var(--fg);border:2px solid var(--fg);padding:8px;margin:6px 0;font:inherit;cursor:pointer}
+.opt:hover{background:var(--c);color:#111}
+.opt.ok{background:var(--ok);color:#fff}.opt.no{background:var(--no);color:#fff}
+.why{color:var(--mut);font-size:.9rem;margin-top:6px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
+.ae{border:3px solid var(--fg);background:var(--card);box-shadow:4px 4px 0 var(--a);cursor:pointer;text-align:left;padding:0;font:inherit;color:var(--fg)}
+.ae .sw{height:90px;border-bottom:3px solid var(--fg)}.ae .tx{padding:8px;font-size:.85rem}.ae b{display:block;font:900 1rem Impact,"Arial Black",sans-serif;text-transform:uppercase}
+.ae.sel{background:var(--c);color:#111;transform:rotate(-1.5deg);box-shadow:6px 6px 0 var(--b)}
+#pick{margin-top:10px;font-weight:bold}
+#chat{font-family:Arial,Helvetica,sans-serif;font-size:15px}
+#msgs{height:300px;overflow-y:auto;border:2px solid var(--fg);background:var(--card)}
+.m{border-bottom:1px solid var(--mut);padding:3px 6px;overflow-wrap:anywhere}.m small{display:block;text-align:right;color:var(--mut);font-size:11px}
+.row{display:flex;gap:6px;margin-top:8px;align-items:stretch}
+textarea,input{font:inherit;border:2px solid var(--fg);padding:6px;background:var(--card);color:var(--fg)}
+textarea{flex:1;height:56px}
+button.btn{border:2px solid var(--fg);background:var(--a);color:#fff;padding:0 12px;font:700 1rem Arial,sans-serif;cursor:pointer;box-shadow:3px 3px 0 var(--fg)}
+button.emo{background:var(--card);font-size:1.3rem;box-shadow:3px 3px 0 var(--fg);color:var(--fg)}
+#panel{display:none;flex-wrap:wrap;gap:2px;border:2px solid var(--fg);background:var(--card);padding:4px;margin-top:6px}
+#panel button{border:0;background:none;font-size:1.4rem;cursor:pointer;padding:2px 4px}
+.nickrow{display:flex;gap:6px;align-items:center;margin-bottom:8px;flex-wrap:wrap}
+#nick{width:170px}#note{color:var(--no);font-size:14px;margin-top:6px}
+</style></head><body><main>
+<div class="hero"><span class="tag">pensamiento electrónico // lectura</span><h1>Eludiendo el cubo blanco</h1>
+<p style="margin:.4em 0 0">Lee el texto de Wade Wallerstein (ANTI-MATERIA). Contesta el quiz, elige tu estética digital y cuéntanos tu exposición virtual en el chat.</p></div>
+
+<h2>01 Quiz</h2><div id="quiz"></div><div id="score" class="card" hidden></div>
+
+<h2>02 Galería de estéticas</h2>
+<p>Elige la estética que usarías para tu exposición virtual. Toca una tarjeta.</p>
+<div class="grid" id="gal"></div><div id="pick"></div>
+
+<h2>03 Chat público</h2>
+<div class="card" id="chat">
+<p style="margin-top:0">Cuenta tu idea de exposición virtual: ¿qué obra mostrarías, en qué espacio (web, Instagram, Minecraft, celular…) y por qué ahí y no en un museo? Explica por qué elegiste tu estética. Con tus propias palabras 💬</p>
+<div class="nickrow"><label for="nick">Tu apodo:</label><input id="nick" maxlength="20"></div>
+<div id="msgs"></div>
+<div id="panel"></div>
+<div class="row"><button class="btn emo" id="eb" title="Emojis">😀</button><textarea id="txt" placeholder="Escriba aquí" maxlength="600"></textarea><button class="btn" id="go">Enviar</button></div>
+<div id="note"></div></div>
+<p style="color:var(--mut);font-size:.85rem">Los mensajes son públicos. No escribas datos personales.</p>
+</main>
+<script>
+const Q=[
+["¿Qué pasa hoy con la palabra “curaduría”?",["Solo la usan historiadores del arte","Se usa para casi cualquier selección en línea, además de su sentido museístico","Ya no significa nada"],1,"El texto contrasta la curaduría tradicional con el uso popular que se le da en medios digitales."],
+["¿Qué detonó la investigación del autor?",["Ver el juego de Porpentine Charity Heartscape en la Bienal del Whitney, donde se sentía aplanado","Un curso de programación","Una exposición en Minecraft"],0,"El trabajo inmersivo y personal se veía ajeno en el espacio de exposición físico."],
+["¿Cómo entiende el texto la materialidad de lo digital?",["Lo digital es inmaterial","Lo digital necesita pantallas, electricidad, cables y servidores","Solo existe en la nube"],1,"Se apoya en Geismar, Horst y Miller: lo digital no es ni más ni menos material."],
+["¿Qué propone AVD.XYZ?",["Una galería pensada para celulares, donde el dispositivo es parte de la obra","Una galería solo en papel","Un museo con boletos"],0,"El espectador sostiene la obra y manipula el espacio con su cuerpo y su dispositivo."],
+["Sobre las instituciones, la conclusión del texto es que…",["Los museos desaparecerán ya","Seguirán existiendo, pero sin el monopolio sobre el arte","Internet no cambió nada"],1,"Los curadores digitales no las eliminan: cambian su tono, alcance y audiencias."]];
+let done=0,pts=0;const qe=document.getElementById("quiz");
+Q.forEach((q,i)=>{const c=document.createElement("div");c.className="card";const p=document.createElement("b");p.textContent=(i+1)+". "+q[0];c.append(p);
+const w=document.createElement("div");w.className="why";
+q[1].forEach((t,j)=>{const b=document.createElement("button");b.className="opt";b.textContent=t;b.onclick=()=>{if(c.dataset.d)return;c.dataset.d=1;
+[...c.querySelectorAll(".opt")].forEach((x,k)=>{if(k==q[2])x.classList.add("ok");else if(k==j)x.classList.add("no")});
+if(j==q[2])pts++;w.textContent=q[3];done++;if(done==Q.length){const s=document.getElementById("score");s.hidden=false;s.textContent="Sacaste "+pts+" de "+Q.length+". Ahora elige tu estética 👇"}};c.append(b)});
+c.append(w);qe.append(c)});
+const AE=[
+["Vaporwave","Nostalgia de los 80 y 90 vuelta ironía: estatuas, palmeras, centros comerciales y neón rosa.","linear-gradient(135deg,#ff71ce,#01cdfe,#b967ff)"],
+["Glitch","El error como belleza: pixeles rotos, líneas desplazadas y señales que fallan.","repeating-linear-gradient(90deg,#00ffd5 0 8px,#111 8px 14px,#ff0055 14px 20px)"],
+["Y2K","Lo futurista según el año 2000: plateado, burbujas, translúcidos y mucho optimismo tecnológico.","linear-gradient(135deg,#c0c8d8,#fff,#7fd6ff)"],
+["Cyberpunk","Ciudad nocturna, neones y tecnología invasiva. Alta tecnología, vida precaria.","linear-gradient(135deg,#0b0b2b,#7a00ff,#ff00aa)"],
+["Webcore","La web de los 90 y 2000: GIFs, contadores de visitas, fondos repetidos y páginas personales.","repeating-linear-gradient(45deg,#00f 0 10px,#ff0 10px 20px)"],
+["Frutiger Aero","Naturaleza y tecnología brillante: agua, burbujas, cielo azul y botones de cristal.","linear-gradient(180deg,#5ec8ff,#b5f0a0)"],
+["Dreamcore","Espacios que parecen recuerdos o sueños: familiares, pero algo no cuadra.","radial-gradient(circle at 30% 40%,#ffd6e8,#b8c0ff,#fdf6b2)"],
+["Kidcore","Colores saturados, juguetes, stickers y caricaturas: alegría exagerada.","conic-gradient(#ff3b30,#ffcc00,#34c759,#0a84ff,#af52de,#ff3b30)"],
+["Pixel art","Imagen hecha de pixeles visibles, heredada de los videojuegos antiguos.","repeating-conic-gradient(#222 0 25%,#ffd23f 0 50%) 0 0/16px 16px"],
+["Brutalismo web","Sitios crudos y sin adornos: texto enorme, bordes duros y tipografías del sistema.","linear-gradient(#fff 0 50%,#111 50%)"],
+["Weirdcore","Imágenes raras, ojos, textos sueltos y escenas inquietantes.","radial-gradient(circle,#fff 0 12%,#222 13% 30%,#6a00ff 31%)"]];
+let chosen="";const gal=document.getElementById("gal");
+AE.forEach(a=>{const b=document.createElement("button");b.className="ae";const s=document.createElement("div");s.className="sw";s.style.background=a[2];
+const t=document.createElement("div");t.className="tx";const n=document.createElement("b");n.textContent=a[0];t.append(n,document.createTextNode(a[1]));b.append(s,t);
+b.onclick=()=>{[...gal.children].forEach(x=>x.classList.remove("sel"));b.classList.add("sel");chosen=a[0];document.getElementById("pick").textContent="Elegiste: "+a[0]+". Ahora cuéntanos en el chat por qué.";
+const tx=document.getElementById("txt");if(!tx.value)tx.value="Mi estética es "+a[0]+" porque "}
+;gal.append(b)});
+// chat
+function nick(){let n=null;try{n=localStorage.getItem("nick")}catch(e){}if(!n)n="anon"+(1000+Math.floor(Math.random()*9000));return n}
+const ni=document.getElementById("nick");ni.value=nick();
+ni.onchange=()=>{ni.value=ni.value.replace(/[^\p{L}\p{N}_ .-]/gu,"").trim()||nick();try{localStorage.setItem("nick",ni.value)}catch(e){}};
+const EM="😀 😂 🥹 😎 🤔 😮 😭 🥰 🤯 👀 ✨ 💾 🖥️ 📱 🌐 🎮 🌈 🔥 💜 💚 🍄 🦆 👾 🤖 🫠 🪩 🌸 ⭐ 👍 🙌".split(" ");
+const panel=document.getElementById("panel"),txt=document.getElementById("txt");
+EM.forEach(e=>{const b=document.createElement("button");b.textContent=e;b.onclick=()=>{txt.value+=e;txt.focus()};panel.append(b)});
+document.getElementById("eb").onclick=()=>{panel.style.display=panel.style.display=="flex"?"none":"flex"};
+const note=document.getElementById("note"),box=document.getElementById("msgs");
+const days=["Dom","Lun","Mar","Mie","Jue","Vie","Sab"],mons=["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+function fmt(t){const d=new Date(t);return days[d.getDay()]+" "+mons[d.getMonth()]+" "+d.getDate()+" "+d.toLocaleTimeString("es-MX")}
+(async()=>{let db=null;try{db=await claude.use("db")}catch(e){}
+if(!db){note.textContent="El chat no está disponible en esta vista (inicia sesión o pide acceso de colaborador).";document.getElementById("go").disabled=true;return}
+const col=db.collection("chat");
+col.orderBy("t").limit(200).onSnapshot(s=>{box.textContent="";s.docs.forEach(d=>{const v=d.data()||{};const m=document.createElement("div");m.className="m";
+const sm=document.createElement("small");sm.textContent=fmt(v.t||0);const tx=document.createElement("span");
+const nm=document.createElement("b");nm.textContent=String(v.n||"anon")+": ";tx.append(nm,document.createTextNode(String(v.x||"")));m.append(sm,tx);box.append(m)});box.scrollTop=box.scrollHeight},e=>{note.textContent="No se pudo cargar el chat."});
+document.getElementById("go").onclick=async()=>{const x=txt.value.trim();if(!x)return;note.textContent="";ni.onchange();
+try{await col.doc().set({n:ni.value||"anon",x:x,t:Date.now()});txt.value="";panel.style.display="none"}catch(e){note.textContent="No se pudo enviar: tu acceso solo permite leer. Pide a tu docente acceso de colaborador."}}})();
+</script></body></html>
